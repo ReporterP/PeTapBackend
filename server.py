@@ -13,15 +13,9 @@ load_images_dir = "downloads"
 os.system('rm -rf ' + load_images_dir + '/*')
 
 db = database.Database()
-# ai = artifical_intellegence.AI()
-# sa = AI(database_path="img", batch_size=128)
+# ai = artifical_intellegence.AI(database_path="img", batch_size=128)
 
 app = Flask(__name__)
-
-
-# Метод загрузки фотографии, где возвращается id в базе
-# Информация по id
-# Список последних (рандомных) фоток
 
 @app.route('/upload', methods=['POST'])
 def upload():
@@ -44,4 +38,11 @@ def photo_show(key):
     selectImage = db.get(key)
     return send_file(selectImage.saved_path, mimetype='image/gif')
 
-app.run(debug=True)
+# TODO: Найти датасет из +- 1000 фоток кошбкособак
+# TODO: Пройтись по всем фоткам и разобрать ответ нейросети от них
+# TODO: Записать ответ в отдельный файлы
+# TODO: Реализовать методы игры
+
+# TODO: Добавить работу нейросети в существующую нейронку
+app.run(debug=True, port=3333)
+

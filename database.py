@@ -5,7 +5,6 @@ import random
 class Database:
     def __init__(self) -> None:
         self.database = {}
-        print("Database init")
     
     def add(self, data):
         key = self.__generate_unique_key()
@@ -23,5 +22,3 @@ class Database:
         if key in self.database.keys():
             return self.__generate_unique_key() 
         return key
-
-
