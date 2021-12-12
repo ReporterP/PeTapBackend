@@ -1,12 +1,16 @@
 from PIL import Image
 from flask import Flask, request, abort, send_file, jsonify
+from flask.json import load
 from werkzeug.utils import secure_filename
 import matplotlib.pyplot as plt
+import os
 
 import artifical_intellegence
 import database
+from photoitem import PhotoItem
 
 load_images_dir = "downloads"
+os.system('rm -rf ' + load_images_dir + '/*')
 
 db = database.Database()
 # ai = artifical_intellegence.AI()
@@ -22,21 +26,22 @@ app = Flask(__name__)
 @app.route('/upload', methods=['POST'])
 def upload():
     f = request.files['file']
-    f.save(secure_filename(f.filename))
-    img = Image.open(f.filename)
-    plt.figure()
-    plt.imshow(img)
-    plt.show()
-    # Текущая фотография - filename
-    return 'Ok'
+    filename = secure_filename(f.filename)
+    saved_path = load_images_dir + "/" + filename
+    f.save(saved_path)
+    img = Image.open(saved_path)
+    key = db.add(PhotoItem(img, saved_path))
+    return jsonify({"key": key})
 
-# Выводит последнюю подгруженную фотографию
 
-@app.route(f'/show/<id>', methods=['GET'])
-def show(id):
-    print(id)
-    # Смотрим результат по id
-    # return send_file(listFilename[len(listFilename)-1], mimetype='image/gif')
+@app.route(f'/photo/<key>', methods=['GET'])
+def photo(key):
+    selectImage = db.get(key)
+    return jsonify(selectImage.toMap())
 
-app.run(debug=True, port=3333)
-print('Server run')
+@app.route(f'/photo/<key>/show', methods=['GET'])
+def photo_show(key):
+    selectImage = db.get(key)
+    return send_file(selectImage.saved_path, mimetype='image/gif')
+
+app.run(debug=True)
