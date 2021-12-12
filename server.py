@@ -10,7 +10,9 @@ import database
 from photoitem import PhotoItem
 
 load_images_dir = "downloads"
-os.system('rm -rf ' + load_images_dir + '/*')
+os.system('rm -rf ' + load_images_dir)
+os.system('mkdir ' + load_images_dir)
+
 
 db = database.Database()
 # ai = artifical_intellegence.AI(database_path="img", batch_size=128)
