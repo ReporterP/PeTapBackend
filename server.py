@@ -35,7 +35,7 @@ def upload():
     key = db.add(photo_item)
     db.get(key)
     ai.recognize_image(photo_item)
-    return jsonify({"key": key} + )
+    return jsonify({"key": key})
 
 
 @app.route(f'/photo/<key>', methods=['GET'])
@@ -49,5 +49,5 @@ def photo_show(key):
     return send_file(selectImage.saved_path, mimetype='image/gif')
 
 # TODO: Добавить работу нейросети в существующую нейронку
-app.run(debug=True, port=3333)
+app.run(debug=False, port=3333)
 

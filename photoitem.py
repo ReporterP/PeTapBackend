@@ -9,15 +9,15 @@ class PhotoItem:
         self.cats_percent = 0
         self.dogs_percent = 0
     
-    def finish(self, cats_percent, dogs_percent):
-        self.cats_percent = cats_percent
-        self.dogs_percent = dogs_percent
+    def finish(self, cat, dog):
+        self.cats_percent = cat
+        self.dogs_percent = dog
         self.isFinished = True
 
     def toMap(self):
         return {
             "reg_datetime": self.reg_datetime, 
             "isFinished": self.isFinished, 
-            "cats_percent": self.cats_percent, 
-            "dogs_percent": self.dogs_percent
+            "cats_percent": float(self.cats_percent), 
+            "dogs_percent": float(self.dogs_percent)
             }

@@ -32,6 +32,8 @@ class AI:
   def generate_labels(self):
     future_labels = []
     self.labels = {}
+    self.labels_length = 0
+
     for maybedir in os.listdir(path=self.__database_path):
       future_labels.append(maybedir)
     for key in future_labels:
@@ -39,6 +41,7 @@ class AI:
     for i in range(len(self.labels.keys())):  
       key = future_labels[i]
       self.labels[key][i] = 1
+      self.labels_length += 1
     del future_labels
     print("Labels generated")
 
@@ -182,8 +185,8 @@ class AI:
     self.model.load_weights(filepath=filepath)
     print(f"Weights {filepath} loaded")
 
-  def recognize_image(self, img: PhotoItem):
-    img = Image.open(img.saved_path)
+  def recognize_image(self, image: PhotoItem):
+    img = Image.open(image.saved_path)
     img = self._smart_trimming(img)
     img = np.array(img).reshape((-1, 50, 50, 3))
     predictions = self.model.predict(
@@ -191,8 +194,6 @@ class AI:
       batch_size=self.__batch_size, 
       verbose=1, 
       use_multiprocessing=True)
-    a = np.argmax(predictions, axis = 1)[0]
-    b = list(self.labels.keys())[a]
-    print(b)
-
+    labels = self.labels.copy()
+    image.finish(*predictions[0])
 
