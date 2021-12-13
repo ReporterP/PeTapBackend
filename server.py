@@ -1,9 +1,5 @@
-from math import e
-from PIL import Image
 from flask import Flask, request, abort, send_file, jsonify
-from flask.json import load
 from werkzeug.utils import secure_filename
-import matplotlib.pyplot as plt
 import os
 
 import artifical_intellegence
@@ -48,6 +44,5 @@ def photo_show(key):
     selectImage = db.get(key)
     return send_file(selectImage.saved_path, mimetype='image/gif')
 
-# TODO: Добавить работу нейросети в существующую нейронку
 app.run(debug=False, port=3333)
 

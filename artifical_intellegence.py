@@ -1,10 +1,7 @@
 import os
-from tensorflow.keras.datasets import cifar10 
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Conv2D, MaxPooling2D, Flatten, Dropout, BatchNormalization
-from tensorflow.keras.optimizers import Adam, Adadelta 
-from tensorflow.keras import utils
-from tensorflow.keras.preprocessing import image
+from tensorflow.keras.optimizers import Adam 
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
