@@ -2,8 +2,7 @@ from PIL import Image
 from datetime import datetime
 
 class PhotoItem:
-    def __init__(self, photo: Image, saved_path: str) -> None:
-        self.photo = photo
+    def __init__(self, saved_path: str) -> None:
         self.saved_path = saved_path
         self.reg_datetime = datetime.now()
         self.isFinished = False

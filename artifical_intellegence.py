@@ -10,20 +10,24 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import random
 
+from photoitem import PhotoItem
+
 
 class AI:
-  def __init__(self, database_path, batch_size):
+  def __init__(self, database_path, batch_size,epochs, initLoad, weights_filename):
     self.__database_path = database_path
     self.__batch_size = batch_size
     self.generate_labels()
-    self.load_image_list()
-    self.init_trains()
-    self.load_images()
-    self.xy_logging()
+    if initLoad: 
+        self.load_trains()
+        self.trains_logging()
     self.compile_model()
-    # self.log_model()
-    self.studying_ai()
-    # self.studying_log(10)
+    self.model_logging()
+    if initLoad: 
+        self.fit(epochs)
+        self.save_weights(weights_filename)
+    else:
+        self.load_weights(weights_filename)
   
   def generate_labels(self):
     future_labels = []
@@ -36,8 +40,13 @@ class AI:
       key = future_labels[i]
       self.labels[key][i] = 1
     del future_labels
+    print("Labels generated")
 
-  def load_image_list(self):
+  
+  def load_trains(self):
+    self.x_train = []
+    self.y_train = []
+
     self.__image_list = []
     for label in self.labels.keys():
       dir = self.__database_path + "/" + label
@@ -47,33 +56,9 @@ class AI:
         self.__image_list.append(fpath)
     random.shuffle(self.__image_list)
 
-  def init_trains(self):
-    self.x_train = []
-    self.y_train = []
-  
-  def smart_trimming(self, img):
-    img_w, img_h = img.size
-    target_size = [50, 50]
-    if self.format_is_album(img_w, img_h):
-      new_h = target_size[1]
-      new_w = round(new_h / img_h * img_w)
-    else:
-      new_w = target_size[0]
-      new_h = round(new_w / img_w * img_h)
-    img = img.resize((new_w, new_h), Image.ANTIALIAS)
-    center = [new_w//2, new_h//2]
-    top_left = [center[0] - target_size[0]//2, center[1] - target_size[1]//2]
-    bottom_right = [center[0] + target_size[0]//2, center[1] + target_size[1]//2]
-    img = img.crop((top_left[0], top_left[1], bottom_right[0], bottom_right[1]))
-    return img
-
-  def format_is_album(self, width: int, height: int):
-    return True if width > height else False
-
-  def load_images(self):
     for fpath in self.__image_list:
       img = Image.open(fpath)
-      img = self.smart_trimming(img)
+      img = self._smart_trimming(img)
       img = np.array(img)
       self.x_train.append(img)
       label = fpath.split('/')[-1].split('.')[0]
@@ -90,9 +75,11 @@ class AI:
 
     self.x_train = self.x_train[10000:]
     self.y_train = self.y_train[10000:]
-  
+    print("Trains generated")
 
-  def xy_logging(self):
+
+
+  def trains_logging(self):
     print("Обучающая выборка:")
     print(self.x_train.shape)
     print(self.y_train.shape)
@@ -104,8 +91,28 @@ class AI:
     print("Тестовая выборка:")
     print(self.x_test.shape)
     print(self.y_test.shape)
+  
 
-  def compile_model(self):
+  def _smart_trimming(self, img):
+    img_w, img_h = img.size
+    target_size = [50, 50]
+    if self._format_is_album(img_w, img_h):
+      new_h = target_size[1]
+      new_w = round(new_h / img_h * img_w)
+    else:
+      new_w = target_size[0]
+      new_h = round(new_w / img_w * img_h)
+    img = img.resize((new_w, new_h), Image.ANTIALIAS)
+    center = [new_w//2, new_h//2]
+    top_left = [center[0] - target_size[0]//2, center[1] - target_size[1]//2]
+    bottom_right = [center[0] + target_size[0]//2, center[1] + target_size[1]//2]
+    img = img.crop((top_left[0], top_left[1], bottom_right[0], bottom_right[1]))
+    return img
+
+  def _format_is_album(self, width: int, height: int):
+    return True if width > height else False
+  
+  def compile_model(self, learning_rate=0.01):
     self.model = Sequential()
     self.model.add(BatchNormalization(input_shape=(50, 50, 3), name="bn1"))
     self.model.add(Conv2D(32, (3, 3), padding='same', activation='relu', name="Conv2D-layer1"))
@@ -124,21 +131,28 @@ class AI:
     self.model.add(Dropout(0.25, name="Dropout-layer3"))
     self.model.add(Flatten(name="flatten"))
     self.model.add(Dense(len(self.labels.keys()), activation='softmax', name = "labels"))
-    self.model.compile(loss="categorical_crossentropy", optimizer=Adam(learning_rate=0.01), metrics=["accuracy"])
-    # self.__model.compile(loss="categorical_crossentropy", optimizer=Adam(), metrics=["accuracy"])
+    # self.model.compile(loss="categorical_crossentropy", optimizer=Adam(learning_rate=learning_rate), metrics=["accuracy"])
+    self.model.compile(loss="categorical_crossentropy", optimizer=Adam(), metrics=["accuracy"])
+    print("Model compiled")
 
-  def log_model(self):
+  def model_logging(self):
     self.model.summary()
 
-  def studying_ai(self):
+  def fit(self, epochs=20):
     self.__history = self.model.fit(self.x_train, 
                             self.y_train, 
                             batch_size=self.__batch_size, 
-                            epochs=20,
+                            epochs=epochs,
                             validation_data=(self.x_val,self.y_val),
-                            verbose=1)
+                            verbose=1, 
+                            use_multiprocessing=True,
+                            )
+    print("Model fitted")
 
-  def studying_log(self, n: int):
+
+  
+
+  def fit_logging(self, n: int):
     plt.plot(self.__history.history['accuracy'], 
          label='Доля верных ответов на обучающем наборе')
     plt.plot(self.__history.history['val_accuracy'], 
@@ -160,3 +174,25 @@ class AI:
     print("Распознан объект: ", a, "-", list(self.labels.keys())[a])
     print("Верный ответ: ", a, "-", list(self.labels.keys())[a])
   
+  def save_weights(self,filepath):
+    self.model.save_weights(filepath=filepath)
+    print(f"Weights {filepath} saved")
+  
+  def load_weights(self, filepath):
+    self.model.load_weights(filepath=filepath)
+    print(f"Weights {filepath} loaded")
+
+  def recognize_image(self, img: PhotoItem):
+    img = Image.open(img.saved_path)
+    img = self._smart_trimming(img)
+    img = np.array(img).reshape((-1, 50, 50, 3))
+    predictions = self.model.predict(
+      img,
+      batch_size=self.__batch_size, 
+      verbose=1, 
+      use_multiprocessing=True)
+    a = np.argmax(predictions, axis = 1)[0]
+    b = list(self.labels.keys())[a]
+    print(b)
+
+

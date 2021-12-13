@@ -1,3 +1,4 @@
+from math import e
 from PIL import Image
 from flask import Flask, request, abort, send_file, jsonify
 from flask.json import load
@@ -13,9 +14,14 @@ load_images_dir = "downloads"
 os.system('rm -rf ' + load_images_dir)
 os.system('mkdir ' + load_images_dir)
 
-
 db = database.Database()
-# ai = artifical_intellegence.AI(database_path="img", batch_size=128)
+
+ai = artifical_intellegence.AI(
+                            database_path="dataset", 
+                            batch_size=128, 
+                            epochs=20, 
+                            initLoad=False, 
+                            weights_filename="dogandcats.hdf5")
 
 app = Flask(__name__)
 
@@ -25,9 +31,11 @@ def upload():
     filename = secure_filename(f.filename)
     saved_path = load_images_dir + "/" + filename
     f.save(saved_path)
-    img = Image.open(saved_path)
-    key = db.add(PhotoItem(img, saved_path))
-    return jsonify({"key": key})
+    photo_item = PhotoItem(saved_path)
+    key = db.add(photo_item)
+    db.get(key)
+    ai.recognize_image(photo_item)
+    return jsonify({"key": key} + )
 
 
 @app.route(f'/photo/<key>', methods=['GET'])
@@ -39,11 +47,6 @@ def photo(key):
 def photo_show(key):
     selectImage = db.get(key)
     return send_file(selectImage.saved_path, mimetype='image/gif')
-
-# TODO: Найти датасет из +- 1000 фоток кошбкособак
-# TODO: Пройтись по всем фоткам и разобрать ответ нейросети от них
-# TODO: Записать ответ в отдельный файлы
-# TODO: Реализовать методы игры
 
 # TODO: Добавить работу нейросети в существующую нейронку
 app.run(debug=True, port=3333)

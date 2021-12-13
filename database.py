@@ -24,7 +24,7 @@ class Database:
         letters = string.ascii_letters + string.digits
         key = ""
         for i in range(16):
-            key += letters[random.randint(0, len(letters))]
+            key += letters[random.randint(0, len(letters) - 1)]
         if key in self._database.keys():
             return self.__generate_unique_key() 
         return key
