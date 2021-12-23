@@ -2,7 +2,6 @@ from flask import Flask, request, abort, send_file, jsonify
 from werkzeug.utils import secure_filename
 from flask.helpers import make_response
 from flask_cors import CORS
-import json
 import os
 
 import artifical_intellegence
