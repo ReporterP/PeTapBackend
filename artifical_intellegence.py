@@ -11,7 +11,7 @@ from photoitem import PhotoItem
 
 
 class AI:
-  def __init__(self, database_path, batch_size,epochs, initLoad, weights_filename):
+  def __init__(self, database_path, batch_size, epochs, initLoad, weights_filename):
     self.__database_path = database_path
     self.__batch_size = batch_size
     self.generate_labels()

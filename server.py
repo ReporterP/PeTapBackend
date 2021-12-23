@@ -1,7 +1,7 @@
 from flask import Flask, request, abort, send_file, jsonify
 from werkzeug.utils import secure_filename
 from flask.helpers import make_response
-from flask_cors import CORS
+# from flask_cors import CORS
 import os
 
 import artifical_intellegence
@@ -24,7 +24,7 @@ ai = artifical_intellegence.AI(
 app = Flask(__name__)
 
 
-cors = CORS(app)
+# cors = CORS(app)
 
 @app.route('/', methods=['GET'])
 def index():
