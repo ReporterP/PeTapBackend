@@ -1,5 +1,8 @@
 from flask import Flask, request, abort, send_file, jsonify
 from werkzeug.utils import secure_filename
+from flask.helpers import make_response
+from flask_cors import CORS
+import json
 import os
 
 import artifical_intellegence
@@ -21,28 +24,36 @@ ai = artifical_intellegence.AI(
 
 app = Flask(__name__)
 
+
+cors = CORS(app)
+
+@app.route('/', methods=['GET'])
+def index():
+    return "Check!"
+
 @app.route('/upload', methods=['POST'])
 def upload():
     f = request.files['file']
+    print('f')
     filename = secure_filename(f.filename)
     saved_path = load_images_dir + "/" + filename
     f.save(saved_path)
     photo_item = PhotoItem(saved_path)
-    key = db.add(photo_item)
-    db.get(key)
     ai.recognize_image(photo_item)
-    return jsonify({"key": key})
+    outMap = photo_item.toMap()
+    outMap.update({"isDog": int(photo_item.dogs_percent > photo_item.cats_percent)})
+    response = jsonify(outMap)
+    return response
 
+# @app.route(f'/photo/<key>', methods=['GET'])
+# def photo(key):
+#     selectImage = db.get(key)
+#     return jsonify(selectImage.toMap())
 
-@app.route(f'/photo/<key>', methods=['GET'])
-def photo(key):
-    selectImage = db.get(key)
-    return jsonify(selectImage.toMap())
-
-@app.route(f'/photo/<key>/show', methods=['GET'])
-def photo_show(key):
-    selectImage = db.get(key)
-    return send_file(selectImage.saved_path, mimetype='image/gif')
+# @app.route(f'/photo/<key>/show', methods=['GET'])
+# def photo_show(key):
+#     selectImage = db.get(key)
+#     return send_file(selectImage.saved_path, mimetype='image/gif')
 
 app.run(debug=False, port=3333)
 
